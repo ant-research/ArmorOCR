@@ -4,8 +4,8 @@
 
 
 <div>
-    <a href="https://huggingface.co/Karras48/ArmorOCR"><img src="https://img.shields.io/badge/🤗 Model-Hugging Face (weights coming soon)-orange"></a>
-    <a href="#"><img src="https://img.shields.io/badge/Paper-arXiv (coming soon)-blue"></a>
+    <a href="https://huggingface.co/inclusionAI/ArmorOCR"><img src="https://img.shields.io/badge/🤗 Model-Hugging Face (weights coming soon)-orange"></a>
+    <a href="https://arxiv.org/abs/2608.20122"><img src="https://img.shields.io/badge/Paper-arXiv-blue"></a>
 </div>
 
 </div>
@@ -28,8 +28,9 @@ Extensive experiments on AdvSpot, other adversarial OCR benchmarks, and general 
 
 ## 🚀 Release
 
+- [2026/08/24] 🔥 Released the AdvSpot evaluation/inference script (`advspot_infer.py`).
 - [2026/08/10] 🔥 Released the inference code and examples.
-- [Coming Soon] 🔥 AdvSpot benchmark and evaluation scripts.
+- [Coming Soon] 🔥 AdvSpot benchmark data.
 
 ## 📦 AdvSpot Benchmark (Coming Soon)
 
@@ -44,7 +45,19 @@ AdvSpot is the first grounded adversarial OCR perception benchmark, providing:
   - Imaging Degradation (Capture / Post-processing Artifacts)
 - **Region-grounded evaluation** with VQA accuracy and IoU metrics.
 
-The benchmark data and evaluation scripts will be released in the near future.
+<div align="center">
+
+**Taxonomy of adversarial OCR perception in AdvSpot.**
+
+<img src="figures/bench_taxonomy.svg" alt="AdvSpot taxonomy" style="max-width:100%; height:auto;">
+
+**Representative adversarial OCR examples across the 13 fine-grained types.**
+
+<img src="figures/advspot_examples.svg" alt="AdvSpot examples" style="max-width:100%; height:auto;">
+
+</div>
+
+The benchmark data will be released in the near future. The evaluation/inference script (`advspot_infer.py`) is already available — see [Evaluate on the AdvSpot benchmark](#3-evaluate-on-the-advspot-benchmark).
 
 ## ⚙️ Installation
 
@@ -62,7 +75,7 @@ pip install transformers==4.57.1 accelerate==1.12.0
 
 ### 1. Download model weights
 
-Download the pre-trained weights from 👉 [Karras48/ArmorOCR on Hugging Face](https://huggingface.co/Karras48/ArmorOCR).
+Download the pre-trained weights from 👉 [inclusionAI/ArmorOCR on Hugging Face](https://huggingface.co/inclusionAI/ArmorOCR).
 
 > The weights will be uploaded soon. Please follow the repo for updates.
 
@@ -73,6 +86,20 @@ python infer.py
 ```
 
 Before running, please modify `YOUR_MODEL_PATH` in `infer.py` to point to your local checkpoint directory.
+
+### 3. Evaluate on the AdvSpot benchmark
+
+We provide `advspot_infer.py` for running ArmorOCR (and other Qwen3-VL-series models) on the AdvSpot benchmark and computing region-grounded evaluation metrics (VQA accuracy + IoU).
+
+```bash
+python advspot_infer.py \
+    --model YOUR_MODEL_PATH \
+    --data-file PATH_TO_ADVSPOT.json \
+    --output-dir ./outputs \
+    --num-gpus 1
+```
+
+Outputs include predictions (`<prefix>.json` / `<prefix>.csv`), region-grounded metrics (`<prefix>#metrics.json`), and badcases (`<prefix>#badcases.csv`). Use `--num-gpus > 1` for data-parallel inference, `--model-arch Qwen3-VL-MoE` for MoE checkpoints, and `--resume` to continue from a previous run. Run `python advspot_infer.py --help` for the full list of options.
 
 ## 🖼️ Examples
 
@@ -94,6 +121,7 @@ We provide four adversarial OCR examples in the `examples/` folder. Each example
 This work would not have been possible without the following excellent projects:
 
 1. [Qwen3-VL](https://github.com/qwenlm/qwen3-vl)
+2. [ms-swift](https://github.com/modelscope/ms-swift)
 
 ## 🔗 Other Work
 
