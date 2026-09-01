@@ -5,6 +5,7 @@
 
 <div>
     <a href="https://huggingface.co/inclusionAI/ArmorOCR"><img src="https://img.shields.io/badge/🤗 Model-Hugging Face-orange"></a>
+    <a href="https://huggingface.co/inclusionAI/ArmorOCR-GGUF"><img src="https://img.shields.io/badge/🤗 GGUF-Hugging Face-orange"></a>
     <a href="https://arxiv.org/abs/2608.20122"><img src="https://img.shields.io/badge/Paper-arXiv-blue"></a>
 </div>
 
@@ -28,6 +29,7 @@ Extensive experiments on AdvSpot, other adversarial OCR benchmarks, and general 
 
 ## 🚀 Release
 
+- [2026/09/01] 🔥 Released the **GGUF quantized weights** ([inclusionAI/ArmorOCR-GGUF](https://huggingface.co/inclusionAI/ArmorOCR-GGUF)).
 - [2026/08/24] 🔥 Released the AdvSpot evaluation/inference script (`advspot_infer.py`).
 - [2026/08/10] 🔥 Released the inference code and examples.
 - [Coming Soon] 🔥 AdvSpot benchmark data.
@@ -64,6 +66,7 @@ The benchmark data will be released in the near future. The evaluation/inference
 ```bash
 conda create -n armorocr python=3.11
 conda activate armorocr
+
 pip install pillow==12.0.0
 pip install torch==2.8.0 torchvision==0.23.0
 pip install transformers==4.57.1 accelerate==1.12.0
@@ -75,9 +78,9 @@ pip install transformers==4.57.1 accelerate==1.12.0
 
 ### 1. Download model weights
 
-Download the pre-trained weights from 👉 [inclusionAI/ArmorOCR on Hugging Face](https://huggingface.co/inclusionAI/ArmorOCR).
-
-> The weights will be uploaded soon. Please follow the repo for updates.
+Download the pre-trained weights from 👉 [inclusionAI/ArmorOCR](https://huggingface.co/inclusionAI/ArmorOCR) on Hugging Face.
+> We also provide quantized GGUF checkpoints at 👉 [inclusionAI/ArmorOCR-GGUF](https://huggingface.co/inclusionAI/ArmorOCR-GGUF), along with a minimal `serve_gguf.sh` + inference example in that repo.
+> The GGUF repo also includes an evaluation comparison table on AdvSpot (base vs. Q8_0 vs. Q4_K_M).
 
 ### 2. Run inference on the provided examples
 
@@ -120,8 +123,9 @@ We provide four adversarial OCR examples in the `examples/` folder. Each example
 
 This work would not have been possible without the following excellent projects:
 
-1. [Qwen3-VL](https://github.com/qwenlm/qwen3-vl)
-2. [ms-swift](https://github.com/modelscope/ms-swift)
+1. [Qwen3-VL](https://github.com/qwenlm/qwen3-vl) — the base vision-language model family ArmorOCR is built upon.
+2. [ms-swift](https://github.com/modelscope/ms-swift) — the training framework used for ArmorOCR's two-stage post-training.
+3. [llama.cpp](https://github.com/ggml-org/llama.cpp) — used for the GGUF quantized release and `llama-server` inference.
 
 ## 🔗 Other Work
 
