@@ -6,6 +6,7 @@
 <div>
     <a href="https://huggingface.co/inclusionAI/ArmorOCR"><img src="https://img.shields.io/badge/🤗 Model-Hugging Face-orange"></a>
     <a href="https://huggingface.co/inclusionAI/ArmorOCR-GGUF"><img src="https://img.shields.io/badge/🤗 GGUF-Hugging Face-orange"></a>
+    <a href="https://huggingface.co/datasets/inclusionAI/advspot-public"><img src="https://img.shields.io/badge/🤗 Dataset-Hugging Face-yellow"></a>
     <a href="https://arxiv.org/abs/2608.20122"><img src="https://img.shields.io/badge/Paper-arXiv-blue"></a>
 </div>
 
@@ -29,16 +30,17 @@ Extensive experiments on AdvSpot, other adversarial OCR benchmarks, and general 
 
 ## 🚀 Release
 
+- [2026/09/23] 🔥 Released the **AdvSpot benchmark data** ([inclusionAI/advspot-public](https://huggingface.co/datasets/inclusionAI/advspot-public)) and updated `advspot_infer.py` (faster prefetched data loading).
 - [2026/09/01] 🔥 Released the **GGUF quantized weights** ([inclusionAI/ArmorOCR-GGUF](https://huggingface.co/inclusionAI/ArmorOCR-GGUF)).
 - [2026/08/24] 🔥 Released the AdvSpot evaluation/inference script (`advspot_infer.py`).
 - [2026/08/10] 🔥 Released the inference code and examples.
-- [Coming Soon] 🔥 AdvSpot benchmark data.
 
-## 📦 AdvSpot Benchmark (Coming Soon)
+## 📦 AdvSpot Benchmark
 
 AdvSpot is the first grounded adversarial OCR perception benchmark, providing:
 
-- **390 images** with region-level annotations (bounding boxes, transcriptions, perception-type labels, region-grounded VQA pairs).
+- **383 images** with region-level annotations (bounding boxes, transcriptions, perception-type labels, region-grounded VQA pairs) → **389 grounded VQA pairs**.
+> 📊 **Public release vs. paper.** The paper reports 390 images / 397 VQA pairs. This public release is a **desensitized** version (sensitive samples removed, with replacements synthesized to keep every subtype at 30–50 samples) → 383 images / 389 pairs. See the dataset card for details.
 - **5 primary categories** and **13 fine-grained adversarial OCR types** organized by underlying perception failure mechanisms:
   - Spatial Manipulation (Rotated / Mirrored / Tiny Text)
   - Glyph Variation (Stylized / Handwritten Text)
@@ -59,7 +61,7 @@ AdvSpot is the first grounded adversarial OCR perception benchmark, providing:
 
 </div>
 
-The benchmark data will be released in the near future. The evaluation/inference script (`advspot_infer.py`) is already available — see [Evaluate on the AdvSpot benchmark](#3-evaluate-on-the-advspot-benchmark).
+The AdvSpot benchmark data is now available at 👉 [inclusionAI/advspot-public](https://huggingface.co/datasets/inclusionAI/advspot-public) (`data_public.jsonl` + `images/`; 383 images / 389 grounded VQA pairs; a desensitized public release). See [Evaluate on the AdvSpot benchmark](#3-evaluate-on-the-advspot-benchmark) for the evaluation/inference script (`advspot_infer.py`).
 
 ## ⚙️ Installation
 
@@ -95,9 +97,12 @@ Before running, please modify `YOUR_MODEL_PATH` in `infer.py` to point to your l
 We provide `advspot_infer.py` for running ArmorOCR (and other Qwen3-VL-series models) on the AdvSpot benchmark and computing region-grounded evaluation metrics (VQA accuracy + IoU).
 
 ```bash
+# 1) Download the benchmark data from https://huggingface.co/datasets/inclusionAI/advspot-public
+#    (data_public.jsonl + images/) into a local directory, e.g. ./advspot-public
+
 python advspot_infer.py \
     --model YOUR_MODEL_PATH \
-    --data-file PATH_TO_ADVSPOT.json \
+    --data-file ./advspot-public/data_public.jsonl \
     --output-dir ./outputs \
     --num-gpus 1
 ```
@@ -129,5 +134,16 @@ This work would not have been possible without the following excellent projects:
 
 ## 🔗 Other Work
 
-Welcome to follow our other work: [clh124/Awesome-Hard-OCR-LMM](https://github.com/clh124/Awesome-Hard-OCR-LMM).
+For readers interested in this direction, we also maintain
+[clh124/Awesome-Hard-OCR-LMM](https://github.com/clh124/Awesome-Hard-OCR-LMM) — a curated,
+actively-updated list of hard-OCR research in the MLLM/VLM era, spanning **benchmarks &
+datasets, research papers, and competitions** across four dimensions:
+
+- **Degraded and in-the-wild OCR** — blur, low resolution, noise, screen photos, occlusion, small/dense text.
+- **Complex-document & structured OCR** — layout, tables, formulas, charts, multi-page context.
+- **Script-diverse / historical / handwritten OCR** — low-resource scripts, ancient documents, handwriting.
+- **Synthetic / hidden / adversarial OCR** — AIGC / synthetic text, hidden text, adversarial visual text.
+
+AdvSpot and ArmorOCR are listed there under the last category; contributions are welcome —
+open an issue on that repo to suggest a missing hard-OCR item.
 </div>
