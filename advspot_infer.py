@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, ast, base64, csv, json, math, re
+import argparse, ast, base64, csv, json, math, re, threading, queue
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,8 @@ def args_parser():
     p.add_argument("--image-max-token-num", type=int, default=4096)
     p.add_argument("--max-new-tokens", type=int, default=2048)
     p.add_argument("--num-gpus", type=int, default=1, help="Number of GPUs for data-parallel inference")
+    p.add_argument("--num-load-workers", type=int, default=8, help="Number of CPU threads for data loading")
+    p.add_argument("--max-data-queue-size", type=int, default=256, help="Max prefetch queue size")
     p.add_argument("--save-interval", type=int, default=50)
     p.add_argument("--index-key", default="id")
     p.add_argument("--resume", action="store_true")
@@ -114,18 +117,50 @@ def infer(data, a, path, rank=0, world_size=1):
     model = cls.from_pretrained(str(a.model), torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2", device_map=device_map)
     processor = AutoProcessor.from_pretrained(str(a.model), use_fast=True)
     shard = data[rank::world_size]
-    for pos, sample in enumerate(shard, 1):
+    total = len(shard)
+
+    pending = [(pos, sample) for pos, sample in enumerate(shard, 1) if str(sample[a.index_key]) not in out]
+    data_queue = queue.Queue(maxsize=a.max_data_queue_size)
+    done_count = [0]
+    done_lock = threading.Lock()
+
+    def load_worker(pos_sample):
+        pos, sample = pos_sample
         sid = str(sample[a.index_key])
-        if sid in out: continue
         try:
-            inputs = model_inputs(sample, processor, a).to(model.device)
-            ids = model.generate(**inputs, max_new_tokens=a.max_new_tokens, do_sample=False)
-            ids = [o[len(i):] for i, o in zip(inputs.input_ids, ids)]
-            pred = processor.batch_decode(ids, skip_special_tokens=not a.keep_special_tokens, clean_up_tokenization_spaces=False)[0]
-            out[sid] = {"pred":pred}; print(f"[GPU {rank} {pos}/{len(shard)}] {sid}: {pred}", flush=True)
+            inputs = model_inputs(sample, processor, a)
+            data_queue.put((pos, sid, inputs, None))
         except Exception as e:
-            out[sid] = {"pred":"", "error":repr(e)}; print(f"[GPU {rank} {pos}/{len(shard)}] {sid} failed: {e}", flush=True)
-        if pos % a.save_interval == 0: save_json(path, out)
+            data_queue.put((pos, sid, None, repr(e)))
+
+    def infer_worker():
+        while True:
+            item = data_queue.get()
+            if item is None: break
+            pos, sid, inputs, err = item
+            if err is not None:
+                out[sid] = {"pred":"", "error":err}; print(f"[GPU {rank} {pos}/{total}] {sid} failed: {err}", flush=True)
+            else:
+                try:
+                    inputs = inputs.to(model.device)
+                    ids = model.generate(**inputs, max_new_tokens=a.max_new_tokens, do_sample=False)
+                    ids = [o[len(i):] for i, o in zip(inputs.input_ids, ids)]
+                    pred = processor.batch_decode(ids, skip_special_tokens=not a.keep_special_tokens, clean_up_tokenization_spaces=False)[0]
+                    out[sid] = {"pred":pred}; print(f"[GPU {rank} {pos}/{total}] {sid}: {pred}", flush=True)
+                except Exception as e:
+                    out[sid] = {"pred":"", "error":repr(e)}; print(f"[GPU {rank} {pos}/{total}] {sid} failed: {e}", flush=True)
+            with done_lock:
+                done_count[0] += 1
+                if done_count[0] % a.save_interval == 0: save_json(path, out)
+
+    infer_thread = threading.Thread(target=infer_worker)
+    infer_thread.start()
+
+    with ThreadPoolExecutor(max_workers=a.num_load_workers) as executor:
+        futures = [executor.submit(load_worker, ps) for ps in pending]
+    wait(futures, return_when=ALL_COMPLETED)
+    data_queue.put(None)
+    infer_thread.join()
     save_json(path, out); return out
 
 
