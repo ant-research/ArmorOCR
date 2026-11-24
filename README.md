@@ -30,7 +30,6 @@ Extensive experiments on AdvSpot, other adversarial OCR benchmarks, and general 
 
 ## 🚀 Release
 
-- [2026/11/23] 📄 Paper updated (arXiv v2): AdvSpot statistics and results are now reported on exactly the public release (383 images / 389 VQA pairs) — the paper and the open-source dataset are fully aligned.
 - [2026/09/23] 🔥 Released the **AdvSpot benchmark data** ([inclusionAI/advspot-public](https://huggingface.co/datasets/inclusionAI/advspot-public)) and updated `advspot_infer.py` (faster prefetched data loading).
 - [2026/09/01] 🔥 Released the **GGUF quantized weights** ([inclusionAI/ArmorOCR-GGUF](https://huggingface.co/inclusionAI/ArmorOCR-GGUF)).
 - [2026/08/24] 🔥 Released the AdvSpot evaluation/inference script (`advspot_infer.py`).
@@ -41,7 +40,6 @@ Extensive experiments on AdvSpot, other adversarial OCR benchmarks, and general 
 AdvSpot is the first grounded adversarial OCR perception benchmark, providing:
 
 - **383 images** with region-level annotations (bounding boxes, transcriptions, perception-type labels, region-grounded VQA pairs) → **389 grounded VQA pairs**.
-> 📊 **Paper alignment.** The paper (arXiv v2) reports AdvSpot statistics and evaluation results on exactly this open-source release (383 images / 389 pairs). The set was desensitized before publication; see the dataset card for details.
 - **5 primary categories** and **13 fine-grained adversarial OCR types** organized by underlying perception failure mechanisms:
   - Spatial Manipulation (Rotated / Mirrored / Tiny Text)
   - Glyph Variation (Stylized / Handwritten Text)
